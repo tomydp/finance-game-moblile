@@ -11,4 +11,15 @@ data class LoginResponse(
     val email_verified: Boolean
 )
 
-data class ErrorResponse(val message: String, val errors: Map<String, List<String>>?)
+data class RegisterRequest(
+    val name: String,
+    val email: String,
+    val password: String,
+    val password_confirmation: String
+)
+
+data class RegisterResponse(
+    val message: String
+)
+
+data class ErrorResponse(val message: String?, val errors: List<String>?)

@@ -14,6 +14,7 @@ import com.tomydp.finance_game_moblile.PREFS_NAME
 import com.tomydp.finance_game_moblile.R
 import com.tomydp.finance_game_moblile.TOKEN_KEY
 import com.tomydp.finance_game_moblile.USER_NAME_KEY
+import com.tomydp.finance_game_moblile.register.RegisterActivity
 
 class LoginActivity : AppCompatActivity() {
 
@@ -28,6 +29,7 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var etEmail: EditText
     private lateinit var etPassword: EditText
     private lateinit var btnLogin: Button
+    private lateinit var btnRegister: Button
     private lateinit var progressBar: ProgressBar
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -39,6 +41,7 @@ class LoginActivity : AppCompatActivity() {
         etEmail = findViewById(R.id.etEmail)
         etPassword = findViewById(R.id.etPassword)
         btnLogin = findViewById(R.id.btnLogin)
+        btnRegister = findViewById(R.id.btnRegister)
         progressBar = findViewById(R.id.progressBar)
 
         // --- 4. CONFIGURAR LISTENERS ---
@@ -50,6 +53,11 @@ class LoginActivity : AppCompatActivity() {
             // Ya no llamamos a handleLogin() ni lanzamos corutinas.
             // Simplemente le pasamos la "orden" al Cerebro.
             viewModel.login(email, password)
+        }
+
+        btnRegister.setOnClickListener {
+            val intent = Intent(this, RegisterActivity::class.java)
+            startActivity(intent)
         }
 
         // --- 5. OBSERVAR EL ESTADO ---
@@ -104,6 +112,7 @@ class LoginActivity : AppCompatActivity() {
     private fun setLoading(isLoading: Boolean) {
         progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
         btnLogin.isEnabled = !isLoading
+        btnRegister.isEnabled = !isLoading
         etEmail.isEnabled = !isLoading
         etPassword.isEnabled = !isLoading
     }

@@ -6,7 +6,7 @@
     android:orientation="vertical"
     android:padding="32dp"
     android:gravity="center"
-    tools:context=".LoginActivity">
+    tools:context=".login.LoginActivity">
 
     <!-- Título de la App -->
     <TextView
@@ -41,6 +41,14 @@
         android:layout_width="match_parent"
         android:layout_height="60dp"
         android:text="INGRESAR"/>
+
+    <Button
+        android:id="@+id/btnRegister"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:text="REGISTRARSE"
+        style="?attr/materialButtonOutlinedStyle"
+        android:layout_marginTop="8dp"/>
 
     <ProgressBar
         android:id="@+id/progressBar"
