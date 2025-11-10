@@ -23,3 +23,22 @@ data class RegisterResponse(
 )
 
 data class ErrorResponse(val message: String?, val errors: List<String>?)
+
+data class AnalyticsResponse(
+    val weekly: Ranking,
+    val global: Ranking
+)
+
+data class Ranking(
+    val top: List<RankingEntry>
+)
+
+data class RankingEntry(
+    val position: Int,
+    val user: User,
+    val correct: Int
+)
+
+data class User(
+    val name: String
+)

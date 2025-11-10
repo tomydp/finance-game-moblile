@@ -3,6 +3,7 @@ package com.tomydp.finance_game_moblile
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.view.Gravity
 import android.view.View
 import android.widget.Button
 import android.widget.LinearLayout
@@ -112,7 +113,7 @@ class MainActivity : AppCompatActivity() {
                             )
                             text = rankingEntry.correct.toString()
                             textSize = 16f
-                            gravity = View.TEXT_ALIGNMENT_VIEW_END
+                            gravity = Gravity.END
                         }
 
                         rowLayout.addView(posTextView)
@@ -160,7 +161,7 @@ class MainActivity : AppCompatActivity() {
                             )
                             text = rankingEntry.correct.toString()
                             textSize = 16f
-                            gravity = View.TEXT_ALIGNMENT_VIEW_END
+                            gravity = Gravity.END
                         }
 
                         rowLayout.addView(posTextView)
