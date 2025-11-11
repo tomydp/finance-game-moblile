@@ -56,10 +56,15 @@ class LoginViewModel : ViewModel() {
                 withContext(Dispatchers.Main) {
                     if (response.isSuccessful) {
                         // 7. Éxito: cambiamos el estado a "Success"
-                        _loginState.value = LoginState.Success(response.body()!!)
+                        val loginResponse = response.body()
+                        if (loginResponse != null) {
+                            _loginState.value = LoginState.Success(loginResponse)
+                        } else {
+                            _loginState.value = LoginState.Error("Received successful response but body was null")
+                        }
                     } else {
                         // 8. Error: parseamos el mensaje y cambiamos a "Error"
-                        val errorMsg = parseErrorMessage(response.errorBody()?.string())
+                        val errorMsg = parseError(response.errorBody()?.string())
                         _loginState.value = LoginState.Error(errorMsg)
                     }
                 }
@@ -73,15 +78,23 @@ class LoginViewModel : ViewModel() {
         }
     }
 
-    // Función helper para parsear los errores de Laravel
-    private fun parseErrorMessage(errorBody: String?): String {
-        if (errorBody == null) return "Error desconocido"
+    private fun parseError(errorBody: String?): String {
+        if (errorBody.isNullOrBlank()) {
+            return "Error en el servidor"
+        }
+
         return try {
-            val errorResponse = Gson().fromJson(errorBody, ErrorResponse::class.java)
-            // Tu AuthController devuelve "message" para 401
-            errorResponse.message ?: "Credenciales inválidas"
+            val errorResponse = Gson().fromJson(errorBody, com.tomydp.finance_game_moblile.network.ErrorResponse::class.java)
+
+            // Intentar sacar mensaje útil del JSON, si es que realmente era JSON
+            errorResponse.message
+                ?: errorResponse.errors?.joinToString("\n")
+                ?: errorBody // si no matchea el modelo, devolvemos el texto tal cual
         } catch (e: Exception) {
-            "Error al procesar la respuesta"
+            // Si NO era JSON (era un STRING plano o HTML), NO rompemos: devolvemos el texto original
+            errorBody
         }
     }
+
+
 }

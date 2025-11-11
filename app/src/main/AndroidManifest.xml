@@ -30,7 +30,25 @@
 
         <activity
             android:name=".MainActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:theme="@style/Theme.FinanceGame.Dark" />
+
+        <activity
+            android:name=".courses.CourseActivity"
+            android:exported="false"
+            android:label="Cursos"
+            android:theme="@style/Theme.FinanceGame.Dark" />
+
+        <activity
+            android:name=".lessons.LessonActivity"
+            android:exported="false"
+            android:label="Lecciones" />
+
+        <activity
+            android:name=".exercises.ExerciseActivity"
+            android:exported="false"
+            android:label="Ejercicio"
+            android:theme="@style/Theme.FinanceGame.Exercise" />
 
     </application>
 

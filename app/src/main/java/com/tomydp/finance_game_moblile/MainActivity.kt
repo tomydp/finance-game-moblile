@@ -28,6 +28,7 @@ class MainActivity : AppCompatActivity() {
 
         val tvWelcome = findViewById<TextView>(R.id.tvWelcome)
         val btnLogout = findViewById<Button>(R.id.btnLogout)
+        val btnPlay = findViewById<Button>(R.id.btnPlay)
         val llWeeklyRankingContainer = findViewById<LinearLayout>(R.id.llWeeklyRankingContainer)
         val llGlobalRankingContainer = findViewById<LinearLayout>(R.id.llGlobalRankingContainer)
         val progressBar = findViewById<ProgressBar>(R.id.progressBar)
@@ -37,6 +38,11 @@ class MainActivity : AppCompatActivity() {
         val token = sharedPrefs.getString(TOKEN_KEY, null)
 
         tvWelcome.text = "¡Hola, $userName!"
+
+        btnPlay.setOnClickListener {
+            val intent = Intent(this@MainActivity, com.tomydp.finance_game_moblile.courses.CourseActivity::class.java)
+            startActivity(intent)
+        }
 
         btnLogout.setOnClickListener {
             sharedPrefs.edit().apply {
@@ -50,14 +56,15 @@ class MainActivity : AppCompatActivity() {
             finish()
         }
 
+        // Si no hay token, redirigir a login
         if (token == null) {
-            // No token, redirect to login
             val intent = Intent(this@MainActivity, LoginActivity::class.java)
             startActivity(intent)
             finish()
             return
         }
 
+        // Crear ViewModel
         val authRepository = AuthRepository()
         val viewModelFactory = AnalyticsViewModelFactory(authRepository)
         analyticsViewModel = ViewModelProvider(this, viewModelFactory)[AnalyticsViewModel::class.java]
@@ -67,109 +74,37 @@ class MainActivity : AppCompatActivity() {
                 is AnalyticsState.Loading -> {
                     progressBar.visibility = View.VISIBLE
                 }
+
                 is AnalyticsState.Success -> {
                     progressBar.visibility = View.GONE
 
-                    // Clear previous views
+                    // Limpiar vistas anteriores
                     llWeeklyRankingContainer.removeAllViews()
                     llGlobalRankingContainer.removeAllViews()
 
-                    // Populate Weekly Ranking
-                    state.response.weekly.top.forEach { rankingEntry ->
-                        val rowLayout = LinearLayout(this).apply {
-                            layoutParams = LinearLayout.LayoutParams(
-                                LinearLayout.LayoutParams.MATCH_PARENT,
-                                LinearLayout.LayoutParams.WRAP_CONTENT
-                            )
-                            orientation = LinearLayout.HORIZONTAL
-                            setPadding(0, 4.dpToPx(this@MainActivity), 0, 4.dpToPx(this@MainActivity)) // Add vertical padding
-                        }
-
-                        val posTextView = TextView(this).apply {
-                            layoutParams = LinearLayout.LayoutParams(
-                                0,
-                                LinearLayout.LayoutParams.WRAP_CONTENT,
-                                1f
-                            )
-                            text = rankingEntry.position.toString()
-                            textSize = 16f
-                        }
-
-                        val nameTextView = TextView(this).apply {
-                            layoutParams = LinearLayout.LayoutParams(
-                                0,
-                                LinearLayout.LayoutParams.WRAP_CONTENT,
-                                3f
-                            )
-                            text = rankingEntry.user.name
-                            textSize = 16f
-                        }
-
-                        val scoreTextView = TextView(this).apply {
-                            layoutParams = LinearLayout.LayoutParams(
-                                0,
-                                LinearLayout.LayoutParams.WRAP_CONTENT,
-                                2f
-                            )
-                            text = rankingEntry.correct.toString()
-                            textSize = 16f
-                            gravity = Gravity.END
-                        }
-
-                        rowLayout.addView(posTextView)
-                        rowLayout.addView(nameTextView)
-                        rowLayout.addView(scoreTextView)
+                    // ✅ Weekly Ranking (seguro contra null)
+                    val weeklyTop = state.response.weekly?.top ?: emptyList()
+                    weeklyTop.forEach { rankingEntry ->
+                        val rowLayout = createRankingRow(
+                            position = rankingEntry.position,
+                            name = rankingEntry.user.name,
+                            score = rankingEntry.correct
+                        )
                         llWeeklyRankingContainer.addView(rowLayout)
                     }
 
-                    // Populate Global Ranking
-                    state.response.global.top.forEach { rankingEntry ->
-                        val rowLayout = LinearLayout(this).apply {
-                            layoutParams = LinearLayout.LayoutParams(
-                                LinearLayout.LayoutParams.MATCH_PARENT,
-                                LinearLayout.LayoutParams.WRAP_CONTENT
-                            )
-                            orientation = LinearLayout.HORIZONTAL
-                            setPadding(0, 4.dpToPx(this@MainActivity), 0, 4.dpToPx(this@MainActivity)) // Add vertical padding
-                        }
-
-                        val posTextView = TextView(this).apply {
-                            layoutParams = LinearLayout.LayoutParams(
-                                0,
-                                LinearLayout.LayoutParams.WRAP_CONTENT,
-                                1f
-                            )
-                            text = rankingEntry.position.toString()
-                            textSize = 16f
-                        }
-
-                        val nameTextView = TextView(this).apply {
-                            layoutParams = LinearLayout.LayoutParams(
-                                0,
-                                LinearLayout.LayoutParams.WRAP_CONTENT,
-                                3f
-                            )
-                            text = rankingEntry.user.name
-                            textSize = 16f
-                        }
-
-                        val scoreTextView = TextView(this).apply {
-                            layoutParams = LinearLayout.LayoutParams(
-                                0,
-                                LinearLayout.LayoutParams.WRAP_CONTENT,
-                                2f
-                            )
-                            text = rankingEntry.correct.toString()
-                            textSize = 16f
-                            gravity = Gravity.END
-                        }
-
-                        rowLayout.addView(posTextView)
-                        rowLayout.addView(nameTextView)
-                        rowLayout.addView(scoreTextView)
+                    // ✅ Global Ranking (seguro contra null)
+                    val globalTop = state.response.global?.top ?: emptyList()
+                    globalTop.forEach { rankingEntry ->
+                        val rowLayout = createRankingRow(
+                            position = rankingEntry.position,
+                            name = rankingEntry.user.name,
+                            score = rankingEntry.correct
+                        )
                         llGlobalRankingContainer.addView(rowLayout)
                     }
                 }
+
                 is AnalyticsState.Error -> {
                     progressBar.visibility = View.GONE
                     Toast.makeText(this, state.message, Toast.LENGTH_LONG).show()
@@ -178,6 +113,43 @@ class MainActivity : AppCompatActivity() {
         }
 
         analyticsViewModel.getAnalytics(token)
+    }
+
+    // 🧩 Función auxiliar para crear una fila de ranking reutilizable
+    private fun createRankingRow(position: Int, name: String, score: Int): LinearLayout {
+        val rowLayout = LinearLayout(this).apply {
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            )
+            orientation = LinearLayout.HORIZONTAL
+            setPadding(0, 4.dpToPx(this@MainActivity), 0, 4.dpToPx(this@MainActivity))
+        }
+
+        val posTextView = TextView(this).apply {
+            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+            text = position.toString()
+            textSize = 16f
+        }
+
+        val nameTextView = TextView(this).apply {
+            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 3f)
+            text = name
+            textSize = 16f
+        }
+
+        val scoreTextView = TextView(this).apply {
+            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 2f)
+            text = score.toString()
+            textSize = 16f
+            gravity = Gravity.END
+        }
+
+        rowLayout.addView(posTextView)
+        rowLayout.addView(nameTextView)
+        rowLayout.addView(scoreTextView)
+
+        return rowLayout
     }
 }
 

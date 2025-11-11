@@ -20,20 +20,41 @@ class RegisterViewModel(private val authRepository: AuthRepository) : ViewModel(
             try {
                 val response = authRepository.register(name, email, password, passwordConfirmation)
                 if (response.isSuccessful) {
-                    _registrationResult.postValue(Result.success(response.body()!!))
+                    val body = response.body()
+                    if (body != null) {
+                        _registrationResult.postValue(Result.success(body))
+                    } else {
+                        _registrationResult.postValue(Result.failure(Exception("Respuesta vacía del servidor")))
+                    }
                 } else {
                     val errorBody = response.errorBody()?.string()
-                    if (errorBody != null) {
-                        val errorResponse = Gson().fromJson(errorBody, ErrorResponse::class.java)
-                        val errorMessage = errorResponse.errors?.joinToString("\n") ?: errorResponse.message ?: "Error desconocido"
-                        _registrationResult.postValue(Result.failure(Exception(errorMessage)))
-                    } else {
-                        _registrationResult.postValue(Result.failure(Exception("Error desconocido")))
-                    }
+                    val message = parseError(errorBody)
+                    _registrationResult.postValue(Result.failure(Exception(message)))
                 }
             } catch (e: Exception) {
                 _registrationResult.postValue(Result.failure(e))
             }
+        }
+    }
+
+    // --- Función auxiliar para manejar errores sin romper con Gson ---
+    private fun parseError(errorBody: String?): String {
+        if (errorBody.isNullOrBlank()) {
+            return "Error en el servidor"
+        }
+
+        return try {
+            val errorResponse = Gson().fromJson(
+                errorBody,
+                com.tomydp.finance_game_moblile.network.ErrorResponse::class.java
+            )
+
+            errorResponse.message
+                ?: errorResponse.errors?.joinToString("\n")
+                ?: errorBody
+        } catch (e: Exception) {
+            // Si no es JSON válido, devolvemos el texto tal cual en vez de crashear
+            errorBody
         }
     }
 }
