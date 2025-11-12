@@ -96,23 +96,16 @@ data class Exercise(
     val id: Int,
     val question: String,
     val type: String,
-    val options: List<Option>,
+    val options: List<String> = emptyList(),
     val correct_answer: String?,
     val explanation_md: String?,
     val has_explanation: Boolean?
 )
 
-data class Option(
-    val id: Int,
-    val text: String
-)
-
 // ---------- Submit Answer ----------
-// Backend (de tu controlador):
-// { correct, progress, completed, feedback: {explanation_md}? , explanation_md? }
 
 data class SubmitRequest(
-    val answer: Int
+    val answer: String
 )
 
 data class Feedback(
@@ -125,4 +118,18 @@ data class SubmitResponse(
     val completed: Boolean,
     val feedback: Feedback?,
     val explanation_md: String?
+)
+
+// ---------- Complete Lesson ----------
+data class NextLesson(
+    val id: Int,
+    val title: String,
+    val order: Int
+)
+
+data class CompleteLessonResponse(
+    val ok: Boolean,
+    val completed: Boolean,
+    val progress: Int,
+    val next_lesson: NextLesson?
 )

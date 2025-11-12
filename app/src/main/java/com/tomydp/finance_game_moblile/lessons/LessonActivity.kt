@@ -8,7 +8,9 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.tomydp.finance_game_moblile.PREFS_NAME
 import com.tomydp.finance_game_moblile.R
+import com.tomydp.finance_game_moblile.TOKEN_KEY
 
 class LessonActivity : AppCompatActivity() {
 
@@ -17,10 +19,20 @@ class LessonActivity : AppCompatActivity() {
     private lateinit var rvLessons: RecyclerView
     private lateinit var progressBar: ProgressBar
     private lateinit var lessonAdapter: LessonAdapter
+    private var token: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_lesson)
+
+        val sharedPrefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
+        token = sharedPrefs.getString(TOKEN_KEY, null)
+
+        if (token == null) {
+            Toast.makeText(this, "Error: User not authenticated", Toast.LENGTH_LONG).show()
+            finish()
+            return
+        }
 
         val courseId = intent.getIntExtra("COURSE_ID", -1)
         if (courseId == -1) {
@@ -58,6 +70,6 @@ class LessonActivity : AppCompatActivity() {
             }
         }
 
-        viewModel.getLessons(courseId)
+        token?.let { viewModel.getLessons(courseId, it) }
     }
 }

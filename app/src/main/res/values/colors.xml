@@ -10,6 +10,15 @@
     <color name="correct_green">#D7FFB8</color>
     <color name="incorrect_red">#FFDFE0</color>
 
+    <!-- Feedback Banner Colors -->
+    <color name="feedback_correct_background">#E8F5E9</color>
+    <color name="feedback_correct_text_icon">#1B5E20</color>
+    <color name="feedback_incorrect_background">#FFEBEE</color>
+    <color name="feedback_incorrect_text_icon">#B71C1C</color>
+
+    <!-- Exercise Screen -->
+    <color name="surface_variant">#1A223F</color>
+
     <!-- Added to fix build errors -->
     <color name="light_gray">#121c38</color>
     <color name="colorPrimary">#9495ca</color>

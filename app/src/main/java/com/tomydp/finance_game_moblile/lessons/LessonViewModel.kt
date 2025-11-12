@@ -20,22 +20,20 @@ class LessonViewModel : ViewModel() {
     private val _lessonState = MutableLiveData<LessonState>()
     val lessonState: LiveData<LessonState> = _lessonState
 
-    fun getLessons(courseId: Int) {
+    fun getLessons(courseId: Int, token: String) {
         _lessonState.value = LessonState.Loading
 
         viewModelScope.launch {
             try {
-                val response = RetrofitClient.api.getLessons(courseId)
+                val response = RetrofitClient.api.getLessons(courseId, "Bearer $token")
 
                 if (response.isSuccessful) {
                     val body: LessonResponse? = response.body()
-                    val lessons = body?.data
-
-                    if (lessons != null) {
-                        _lessonState.postValue(LessonState.Success(lessons))
+                    if (body?.data != null) {
+                        _lessonState.postValue(LessonState.Success(body.data))
                     } else {
                         _lessonState.postValue(
-                            LessonState.Error("Respuesta vacía de lecciones")
+                            LessonState.Error("Respuesta inválida del servidor")
                         )
                     }
                 } else {

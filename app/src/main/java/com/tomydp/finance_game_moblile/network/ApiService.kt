@@ -27,27 +27,29 @@ interface ApiService {
     ): Response<AnalyticsResponse>
 
     @GET("api/courses")
-    suspend fun getCourses(): Response<CourseResponse>
+    suspend fun getCourses(@Header("Authorization") token: String): Response<CourseResponse>
 
     @GET("api/courses/{id}/lessons")
     suspend fun getLessons(
-        @Path("id") courseId: Int
+        @Path("id") courseId: Int,
+        @Header("Authorization") token: String
     ): Response<LessonResponse>
 
     @GET("api/lessons/{id}/exercises")
     suspend fun getExercises(
-        @Path("id") lessonId: Int
+        @Path("id") lessonId: Int,
+        @Header("Authorization") token: String
     ): Response<ExerciseResponse>
 
     @POST("api/exercises/{id}/submit")
-    suspend fun submitAnswer(
-        @Path("id") exerciseId: Int,
-        @Body request: SubmitRequest
-    ): Response<SubmitResponse>
+    suspend fun submitAnswer(@Path("id") exerciseId: Int, @Body answer: SubmitRequest, @Header("Authorization") token: String): Response<SubmitResponse>
+
+    @POST("api/lessons/{id}/complete")
+    suspend fun completeLesson(@Path("id") lessonId: Int, @Header("Authorization") token: String): Response<CompleteLessonResponse>
 }
 
 object RetrofitClient {
-    private const val BASE_URL = "http://10.0.2.2/"
+    private const val BASE_URL = "http://192.168.1.149/"
 
     val api: ApiService by lazy {
         Retrofit.Builder()

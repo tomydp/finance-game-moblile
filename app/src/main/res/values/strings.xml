@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">finance-game-moblile</string>
+    <string name="exercise_option_button_description">Botón de opción de ejercicio</string>
+    <string name="submit_answer_button_description">Botón para enviar respuesta</string>
 </resources>

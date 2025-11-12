@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Estado Presionado y Seleccionado -->
+    <item android:state_pressed="true" android:state_checked="true">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/morado" />
+            <corners android:radius="12dp" />
+            <stroke android:width="2dp" android:color="@color/morado" />
+        </shape>
+    </item>
+
+    <!-- Estado Seleccionado -->
+    <item android:state_checked="true">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/morado" />
+            <corners android:radius="12dp" />
+            <stroke android:width="2dp" android:color="@color/morado" />
+        </shape>
+    </item>
+
+    <!-- Estado Presionado (no seleccionado) -->
+    <item android:state_pressed="true">
+        <shape android:shape="rectangle">
+            <solid android:color="#209495ca" /> <!-- morado con alpha -->
+            <corners android:radius="12dp" />
+            <stroke android:width="2dp" android:color="@color/morado" />
+        </shape>
+    </item>
+
+    <!-- Estado por Defecto (no seleccionado) -->
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@android:color/transparent" />
+            <corners android:radius="12dp" />
+            <stroke android:width="2dp" android:color="@color/morado" />
+        </shape>
+    </item>
+</selector>

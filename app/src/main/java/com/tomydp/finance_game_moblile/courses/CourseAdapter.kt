@@ -34,9 +34,12 @@ class CourseAdapter(
             tvCourseTitle.text = course.name
             tvCourseDescription.text = course.description
 
-            if (course.completed_lessons_count != null && course.lessons_count != null) {
+            val completedCount = course.completed_lessons_count ?: 0
+            val totalCount = course.lessons_count ?: 0
+
+            if (totalCount > 0) {
                 tvCourseProgress.visibility = View.VISIBLE
-                tvCourseProgress.text = "${course.completed_lessons_count}/${course.lessons_count} lecciones completadas"
+                tvCourseProgress.text = "$completedCount/$totalCount"
             } else {
                 tvCourseProgress.visibility = View.GONE
             }

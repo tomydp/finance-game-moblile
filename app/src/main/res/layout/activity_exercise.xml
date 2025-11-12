@@ -20,22 +20,29 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <LinearLayout
-        android:id="@+id/optionsContainer"
+    <androidx.cardview.widget.CardView
+        android:id="@+id/optionsPanel"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginTop="48dp"
         android:layout_marginBottom="24dp"
-        android:orientation="vertical"
-        android:gravity="center"
+        app:cardBackgroundColor="@color/surface_variant"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="8dp"
         app:layout_constraintBottom_toTopOf="@+id/btnSubmit"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/tvQuestion">
 
-        <!-- Option buttons will be added here dynamically -->
+        <LinearLayout
+            android:id="@+id/optionsContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:orientation="vertical"
+            android:padding="16dp" />
 
-    </LinearLayout>
+    </androidx.cardview.widget.CardView>
 
     <Button
         android:id="@+id/btnSubmit"
@@ -45,6 +52,7 @@
         android:padding="16dp"
         android:text="Submit"
         android:textSize="18sp"
+        android:contentDescription="@string/submit_answer_button_description"
         app:layout_constraintBottom_toTopOf="@+id/feedbackContainer"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
