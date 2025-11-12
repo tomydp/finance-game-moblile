@@ -34,17 +34,26 @@ class CourseAdapter(
             tvCourseTitle.text = course.name
             tvCourseDescription.text = course.description
 
-            val completedCount = course.completed_lessons_count ?: 0
-            val totalCount = course.lessons_count ?: 0
-
-            if (totalCount > 0) {
+            if (course.completed == true) {
+                // Course is completed
+                itemView.setBackgroundResource(R.drawable.item_course_completed_background)
                 tvCourseProgress.visibility = View.VISIBLE
-                tvCourseProgress.text = "$completedCount/$totalCount"
+                tvCourseProgress.text = "Completado"
+                itemView.setOnClickListener(null) // Disable click
             } else {
-                tvCourseProgress.visibility = View.GONE
-            }
+                // Course is not completed
+                itemView.setBackgroundResource(R.drawable.ranking_section_background)
+                val completedCount = course.completed_lessons_count ?: 0
+                val totalCount = course.lessons_count ?: 0
 
-            itemView.setOnClickListener { onCourseClicked(course.id) }
+                if (totalCount > 0) {
+                    tvCourseProgress.visibility = View.VISIBLE
+                    tvCourseProgress.text = "$completedCount/$totalCount"
+                } else {
+                    tvCourseProgress.visibility = View.GONE
+                }
+                itemView.setOnClickListener { onCourseClicked(course.id) }
+            }
         }
     }
 }

@@ -62,7 +62,8 @@ data class Course(
     val name: String,
     val description: String,
     val lessons_count: Int?,
-    val completed_lessons_count: Int?
+    val completed_lessons_count: Int?,
+    val completed: Boolean?
 )
 
 data class CourseResponse(
@@ -132,4 +133,40 @@ data class CompleteLessonResponse(
     val completed: Boolean,
     val progress: Int,
     val next_lesson: NextLesson?
+)
+
+// ---------- Course Progress ----------
+data class CourseProgressResponse(
+    val ok: Boolean,
+    val course: CourseProgress,
+    val lessons: ProgressDetails,
+    val exercises: ProgressDetails
+)
+
+data class CourseProgress(
+    val id: Int,
+    val name: String,
+    val completed: Boolean,
+    val completed_at: String?
+)
+
+data class ProgressDetails(
+    val completed: Int,
+    val total: Int,
+    val percent: Int
+)
+
+
+// ---------- Complete Course ----------
+data class CompleteCourseResponse(
+    val ok: Boolean,
+    val completed: Boolean,
+    val course: CompletedCourseDetails,
+    val lessons_summary: ProgressDetails
+)
+
+data class CompletedCourseDetails(
+    val id: Int,
+    val name: String,
+val completed_at: String
 )

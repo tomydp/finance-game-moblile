@@ -22,6 +22,7 @@ class CourseActivity : AppCompatActivity() {
     private lateinit var progressBar: ProgressBar
     private lateinit var courseAdapter: CourseAdapter
     private var token: String? = null
+    private var currentCourseId: Int? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,6 +48,12 @@ class CourseActivity : AppCompatActivity() {
         super.onResume()
         // Refresh courses when the user returns to this screen
         token?.let { viewModel.getCourses(it) }
+        // If we are returning from a lesson, check the course progress to trigger auto-completion
+        currentCourseId?.let { courseId ->
+            token?.let { token ->
+                viewModel.getCourseProgress(courseId, token)
+            }
+        }
     }
 
     private fun setupRecyclerView() {
@@ -64,13 +71,36 @@ class CourseActivity : AppCompatActivity() {
                     progressBar.visibility = View.GONE
                     rvCourses.visibility = View.VISIBLE
                     courseAdapter = CourseAdapter(state.courses) { courseId ->
-                        token?.let { viewModel.getLessonsForCourse(courseId, it) }
+                        currentCourseId = courseId
+                        token?.let { viewModel.getCourseProgress(courseId, it) }
                     }
                     rvCourses.adapter = courseAdapter
                 }
                 is CourseState.Error -> {
                     progressBar.visibility = View.GONE
                     Toast.makeText(this, state.message, Toast.LENGTH_LONG).show()
+                }
+            }
+        }
+
+        viewModel.courseProgressState.observe(this) { state ->
+            when (state) {
+                is CourseProgressState.Loading -> progressBar.visibility = View.VISIBLE
+                is CourseProgressState.Error -> {
+                    progressBar.visibility = View.GONE
+                    Toast.makeText(this, state.message, Toast.LENGTH_LONG).show()
+                }
+                is CourseProgressState.Success -> {
+                    if (state.progress.course.completed) {
+                        progressBar.visibility = View.GONE
+                        Toast.makeText(this, "Curso ya completado", Toast.LENGTH_SHORT).show()
+                    } else {
+                        currentCourseId?.let { courseId ->
+                            token?.let { token ->
+                                viewModel.getLessonsForCourse(courseId, token)
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -82,7 +112,6 @@ class CourseActivity : AppCompatActivity() {
                 }
                 is LessonState.Success -> {
                     progressBar.visibility = View.GONE
-                    // Find the first lesson that is not 100% complete
                     val nextIncompleteLesson = state.lessons.firstOrNull { it.progress_percent != 100 }
 
                     if (nextIncompleteLesson != null) {
@@ -90,16 +119,33 @@ class CourseActivity : AppCompatActivity() {
                         intent.putExtra("LESSON_ID", nextIncompleteLesson.id)
                         startActivity(intent)
                     } else if (state.lessons.isNotEmpty()) {
-                        // This case means all lessons are complete
-                        Toast.makeText(this, "¡Curso completado!", Toast.LENGTH_SHORT).show()
+                        currentCourseId?.let { courseId ->
+                            token?.let { token ->
+                                viewModel.completeCourse(courseId, token)
+                            }
+                        }
                     } else {
-                        // This case means the course has no lessons
                         Toast.makeText(this, "Este curso no tiene lecciones.", Toast.LENGTH_SHORT).show()
                     }
                 }
                 is LessonState.Error -> {
                     progressBar.visibility = View.GONE
                     Toast.makeText(this, state.message, Toast.LENGTH_LONG).show()
+                }
+            }
+        }
+
+        viewModel.completeCourseState.observe(this) { state ->
+            when (state) {
+                is CompleteCourseState.Loading -> progressBar.visibility = View.VISIBLE
+                is CompleteCourseState.Error -> {
+                    progressBar.visibility = View.GONE
+                    Toast.makeText(this, state.message, Toast.LENGTH_LONG).show()
+                }
+                is CompleteCourseState.Success -> {
+                    progressBar.visibility = View.GONE
+                    Toast.makeText(this, "¡Curso completado!", Toast.LENGTH_SHORT).show()
+                    token?.let { viewModel.getCourses(it) }
                 }
             }
         }

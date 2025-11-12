@@ -217,9 +217,17 @@ class ExerciseActivity : AppCompatActivity() {
                         showFeedbackBanner(false, "Incorrecto", explanation)
                     }
 
-                    btnSubmit.text = "CONTINUAR"
-                    btnSubmit.isEnabled = true // Re-enable to allow continuing
-                    btnSubmit.setOnClickListener { loadNextQuestion() }
+                    if (response.completed) {
+                        btnSubmit.text = "FINALIZAR LECCIÓN"
+                        btnSubmit.isEnabled = true
+                        btnSubmit.setOnClickListener {
+                            token?.let { viewModel.completeLesson(lessonId, it) }
+                        }
+                    } else {
+                        btnSubmit.text = "CONTINUAR"
+                        btnSubmit.isEnabled = true // Re-enable to allow continuing
+                        btnSubmit.setOnClickListener { loadNextQuestion() }
+                    }
                 }
                 is SubmissionState.Error -> {
                     progressBar.visibility = View.GONE

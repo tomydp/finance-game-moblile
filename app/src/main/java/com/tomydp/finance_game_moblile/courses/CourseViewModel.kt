@@ -22,6 +22,18 @@ sealed class LessonState {
     data class Error(val message: String) : LessonState()
 }
 
+sealed class CourseProgressState {
+    object Loading : CourseProgressState()
+    data class Success(val progress: com.tomydp.finance_game_moblile.network.CourseProgressResponse) : CourseProgressState()
+    data class Error(val message: String) : CourseProgressState()
+}
+
+sealed class CompleteCourseState {
+    object Loading : CompleteCourseState()
+    data class Success(val response: com.tomydp.finance_game_moblile.network.CompleteCourseResponse) : CompleteCourseState()
+    data class Error(val message: String) : CompleteCourseState()
+}
+
 class CourseViewModel : ViewModel() {
 
     private val _courseState = MutableLiveData<CourseState>()
@@ -29,6 +41,12 @@ class CourseViewModel : ViewModel() {
 
     private val _lessonState = MutableLiveData<LessonState>()
     val lessonState: LiveData<LessonState> = _lessonState
+
+    private val _courseProgressState = MutableLiveData<CourseProgressState>()
+    val courseProgressState: LiveData<CourseProgressState> = _courseProgressState
+
+    private val _completeCourseState = MutableLiveData<CompleteCourseState>()
+    val completeCourseState: LiveData<CompleteCourseState> = _completeCourseState
 
     fun getCourses(token: String) {
         viewModelScope.launch {
@@ -70,6 +88,42 @@ class CourseViewModel : ViewModel() {
             } catch (e: Exception) {
                 e.printStackTrace()
                 _lessonState.postValue(LessonState.Error("Error de red (lecciones): ${e.message}"))
+            }
+        }
+    }
+
+    fun getCourseProgress(courseId: Int, token: String) {
+        viewModelScope.launch {
+            _courseProgressState.postValue(CourseProgressState.Loading)
+            try {
+                val response = RetrofitClient.api.getCourseProgress(courseId, "Bearer $token")
+                if (response.isSuccessful) {
+                    response.body()?.let {
+                        _courseProgressState.postValue(CourseProgressState.Success(it))
+                    } ?: _courseProgressState.postValue(CourseProgressState.Error("Respuesta de progreso de curso inválida"))
+                } else {
+                    _courseProgressState.postValue(CourseProgressState.Error("Error ${response.code()} al obtener progreso del curso"))
+                }
+            } catch (e: Exception) {
+                _courseProgressState.postValue(CourseProgressState.Error("Error de red (progreso de curso): ${e.message}"))
+            }
+        }
+    }
+
+    fun completeCourse(courseId: Int, token: String) {
+        viewModelScope.launch {
+            _completeCourseState.postValue(CompleteCourseState.Loading)
+            try {
+                val response = RetrofitClient.api.completeCourse(courseId, "Bearer $token")
+                if (response.isSuccessful) {
+                    response.body()?.let {
+                        _completeCourseState.postValue(CompleteCourseState.Success(it))
+                    } ?: _completeCourseState.postValue(CompleteCourseState.Error("Respuesta de completar curso inválida"))
+                } else {
+                    _completeCourseState.postValue(CompleteCourseState.Error("Error ${response.code()} al completar el curso"))
+                }
+            } catch (e: Exception) {
+                _completeCourseState.postValue(CompleteCourseState.Error("Error de red (completar curso): ${e.message}"))
             }
         }
     }
