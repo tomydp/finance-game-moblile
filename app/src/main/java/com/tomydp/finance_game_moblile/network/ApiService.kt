@@ -21,6 +21,9 @@ interface ApiService {
         @Body request: RegisterRequest
     ): Response<RegisterResponse>
 
+    @GET("api/profile")
+    suspend fun getProfile(@Header("Authorization") token: String): Response<ProfileResponse>
+
     @GET("api/analytics/rankings")
     suspend fun getAnalyticsRankings(
         @Header("Authorization") token: String

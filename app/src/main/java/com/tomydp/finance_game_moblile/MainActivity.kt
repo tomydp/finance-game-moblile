@@ -29,6 +29,7 @@ class MainActivity : AppCompatActivity() {
         val tvWelcome = findViewById<TextView>(R.id.tvWelcome)
         val btnLogout = findViewById<Button>(R.id.btnLogout)
         val btnPlay = findViewById<Button>(R.id.btnPlay)
+        val btnProfile = findViewById<Button>(R.id.btnProfile)
         val llWeeklyRankingContainer = findViewById<LinearLayout>(R.id.llWeeklyRankingContainer)
         val llGlobalRankingContainer = findViewById<LinearLayout>(R.id.llGlobalRankingContainer)
         val progressBar = findViewById<ProgressBar>(R.id.progressBar)
@@ -41,6 +42,11 @@ class MainActivity : AppCompatActivity() {
 
         btnPlay.setOnClickListener {
             val intent = Intent(this@MainActivity, com.tomydp.finance_game_moblile.courses.CourseActivity::class.java)
+            startActivity(intent)
+        }
+
+        btnProfile.setOnClickListener {
+            val intent = Intent(this@MainActivity, com.tomydp.finance_game_moblile.profile.ProfileActivity::class.java)
             startActivity(intent)
         }
 

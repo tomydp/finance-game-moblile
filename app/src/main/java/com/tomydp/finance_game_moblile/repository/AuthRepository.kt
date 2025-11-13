@@ -23,6 +23,10 @@ class AuthRepository {
         return api.register(request)
     }
 
+    suspend fun getProfile(token: String): Response<com.tomydp.finance_game_moblile.network.ProfileResponse> {
+        return api.getProfile("Bearer $token")
+    }
+
     suspend fun getAnalyticsRankings(token: String): Response<AnalyticsResponse> {
         return api.getAnalyticsRankings("Bearer $token")
     }
