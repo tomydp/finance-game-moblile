@@ -31,6 +31,15 @@ data class ErrorResponse(
     val errors: List<String>?
 )
 
+data class ProfileResponse(
+    val id: Int,
+    val name: String,
+    val email: String,
+    val verified: Boolean,
+    val email_verified: Boolean,
+    val has_membership: Boolean
+)
+
 // ---------- Analytics ----------
 // Backend: { ok, meta, weekly: { top: [...] }, global: { top: [...] } }
 

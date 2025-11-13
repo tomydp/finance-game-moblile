@@ -21,9 +21,12 @@ interface ApiService {
         @Body request: RegisterRequest
     ): Response<RegisterResponse>
 
+    @GET("api/profile")
+    suspend fun getProfile(@Header("Authorization") token: String): Response<ProfileResponse>
+
     @GET("api/analytics/rankings")
     suspend fun getAnalyticsRankings(
-           @Header("Authorization") token: String
+        @Header("Authorization") token: String
     ): Response<AnalyticsResponse>
 
     @GET("api/courses")
@@ -64,7 +67,7 @@ interface ApiService {
 }
 
 object RetrofitClient {
-    private const val BASE_URL = "http://192.168.1.112/"
+    private const val BASE_URL = "http://192.168.1.110/"
 
     val api: ApiService by lazy {
         Retrofit.Builder()
