@@ -67,7 +67,7 @@ interface ApiService {
 }
 
 object RetrofitClient {
-    private const val BASE_URL = "http://192.168.1.110/"
+    private const val BASE_URL = "http://192.168.1.148/"
 
     val api: ApiService by lazy {
         Retrofit.Builder()
