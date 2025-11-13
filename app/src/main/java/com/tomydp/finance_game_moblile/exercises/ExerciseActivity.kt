@@ -1,6 +1,7 @@
 package com.tomydp.finance_game_moblile.exercises
 
 import android.content.Context
+import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
@@ -40,12 +41,14 @@ class ExerciseActivity : AppCompatActivity() {
     private lateinit var tvFeedbackExplanation: TextView
 
     private var lessonId: Int = -1
+    private var courseId: Int = -1
     private var exercises: List<Exercise> = emptyList()
     private var currentExerciseIndex = 0
     private var selectedOptionId: Int = -1
     private var isAnswerSubmitted = false
     private var radioButtons = mutableListOf<RadioButton>()
     private var token: String? = null
+    private var lessonName: String? = null
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -62,8 +65,10 @@ class ExerciseActivity : AppCompatActivity() {
         }
 
         lessonId = intent.getIntExtra("LESSON_ID", -1)
-        if (lessonId == -1) {
-            Toast.makeText(this, "Error: Lesson ID not found", Toast.LENGTH_LONG).show()
+        courseId = intent.getIntExtra("COURSE_ID", -1)
+        lessonName = intent.getStringExtra("LESSON_NAME")
+        if (lessonId == -1 || courseId == -1) {
+            Toast.makeText(this, "Error: Lesson or Course ID not found", Toast.LENGTH_LONG).show()
             finish()
             return
         }
@@ -217,15 +222,17 @@ class ExerciseActivity : AppCompatActivity() {
                         showFeedbackBanner(false, "Incorrecto", explanation)
                     }
 
+                    btnSubmit.text = "CONTINUAR"
+                    btnSubmit.isEnabled = true
+
+                    // Check if the lesson is completed
                     if (response.completed) {
-                        btnSubmit.text = "FINALIZAR LECCIÓN"
-                        btnSubmit.isEnabled = true
+                        // If the lesson is complete, the "CONTINUAR" button will trigger the completion flow.
                         btnSubmit.setOnClickListener {
                             token?.let { viewModel.completeLesson(lessonId, it) }
                         }
                     } else {
-                        btnSubmit.text = "CONTINUAR"
-                        btnSubmit.isEnabled = true // Re-enable to allow continuing
+                        // Otherwise, it will just load the next question.
                         btnSubmit.setOnClickListener { loadNextQuestion() }
                     }
                 }
@@ -251,25 +258,23 @@ class ExerciseActivity : AppCompatActivity() {
                     progressBar.visibility = View.VISIBLE
                 }
                 is LessonCompletionState.Success -> {
-                    Log.d("ExerciseActivity", "Lesson completion successful. Response: ${state.response}")
+                    progressBar.visibility = View.GONE
                     val nextLesson = state.response.next_lesson
                     if (nextLesson != null) {
-                        progressBar.visibility = View.GONE
-                        Toast.makeText(this, "¡Siguiente lección!", Toast.LENGTH_SHORT).show()
-                        lessonId = nextLesson.id
-                        currentExerciseIndex = 0
-                        token?.let { viewModel.getExercises(lessonId, it) }
+                        // There is a next lesson, start it directly.
+                        val intent = Intent(this, ExerciseActivity::class.java)
+                        intent.putExtra("COURSE_ID", courseId)
+                        intent.putExtra("LESSON_ID", nextLesson.id)
+                        intent.putExtra("LESSON_NAME", nextLesson.title)
+                        startActivity(intent)
+                        finish()
                     } else {
-                        // Lesson finished, show a modal and return to CourseActivity
-                        AlertDialog.Builder(this)
-                            .setTitle("¡Lección Completada!")
-                            .setMessage("¡Buen trabajo! Has completado esta lección.")
-                            .setPositiveButton("CONTINUAR") { dialog, _ ->
-                                dialog.dismiss()
-                                finish() // This will return to CourseActivity
-                            }
-                            .setCancelable(false)
-                            .show()
+                        // This was the last lesson of the course. Go back to CourseActivity and tell it to complete the course.
+                        val intent = Intent(this, com.tomydp.finance_game_moblile.courses.CourseActivity::class.java)
+                        intent.putExtra("COMPLETE_COURSE_ID", courseId)
+                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                        startActivity(intent)
+                        finish()
                     }
                 }
                 is LessonCompletionState.Error -> {
@@ -364,8 +369,10 @@ class ExerciseActivity : AppCompatActivity() {
         if (currentExerciseIndex < exercises.size) {
             displayCurrentExercise()
         } else {
-            // Last exercise finished, try to complete the lesson
-            token?.let { viewModel.completeLesson(lessonId, it) }
+            // This case should now be handled by the submissionState observer
+            // based on the 'completed' flag from the backend.
+            // Finishing the activity as a fallback.
+            finish()
         }
     }
 }

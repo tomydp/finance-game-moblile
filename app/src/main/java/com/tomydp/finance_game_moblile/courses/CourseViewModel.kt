@@ -52,7 +52,7 @@ class CourseViewModel : ViewModel() {
         viewModelScope.launch {
             _courseState.postValue(CourseState.Loading)
             try {
-                val response = RetrofitClient.api.getCourses("Bearer $token")
+                val response = RetrofitClient.api.getCourses("Bearer $token", "no-cache")
                 if (response.isSuccessful) {
                     val body = response.body()
                     Log.d("CourseViewModel", "Courses Response: $body")

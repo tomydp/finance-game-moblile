@@ -27,7 +27,10 @@ interface ApiService {
     ): Response<AnalyticsResponse>
 
     @GET("api/courses")
-    suspend fun getCourses(@Header("Authorization") token: String): Response<CourseResponse>
+    suspend fun getCourses(
+        @Header("Authorization") token: String,
+        @Header("Cache-Control") cacheControl: String
+    ): Response<CourseResponse>
 
     @GET("api/courses/{id}/lessons")
     suspend fun getLessons(

@@ -9,7 +9,7 @@ import com.tomydp.finance_game_moblile.R
 import com.tomydp.finance_game_moblile.network.Course
 
 class CourseAdapter(
-    private val courses: List<Course>,
+    private var courses: List<Course>,
     private val onCourseClicked: (Int) -> Unit
 ) : RecyclerView.Adapter<CourseAdapter.CourseViewHolder>() {
 
@@ -24,6 +24,11 @@ class CourseAdapter(
     }
 
     override fun getItemCount(): Int = courses.size
+
+    fun submitList(newCourses: List<Course>) {
+        courses = newCourses
+        notifyDataSetChanged()
+    }
 
     class CourseViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val tvCourseTitle: TextView = itemView.findViewById(R.id.tvCourseTitle)

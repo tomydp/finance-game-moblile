@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.View
 import android.widget.ProgressBar
 import android.widget.Toast
+import android.util.Log // Added this import
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -42,22 +43,40 @@ class CourseActivity : AppCompatActivity() {
 
         setupRecyclerView()
         observeViewModel()
+        handleIntent(intent)
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent) // Update the activity's intent
+        handleIntent(intent)
+    }
+
+    private fun handleIntent(intent: Intent) {
+        val courseIdToComplete = intent.getIntExtra("COMPLETE_COURSE_ID", -1)
+        if (courseIdToComplete != -1) {
+            Log.d("CourseActivity", "Received intent to complete course ID: $courseIdToComplete")
+            token?.let { viewModel.completeCourse(courseIdToComplete, it) }
+            // Remove the extra to prevent re-triggering on configuration change
+            getIntent().removeExtra("COMPLETE_COURSE_ID")
+        }
     }
 
     override fun onResume() {
         super.onResume()
         // Refresh courses when the user returns to this screen
         token?.let { viewModel.getCourses(it) }
-        // If we are returning from a lesson, check the course progress to trigger auto-completion
-        currentCourseId?.let { courseId ->
-            token?.let { token ->
-                viewModel.getCourseProgress(courseId, token)
-            }
-        }
     }
 
     private fun setupRecyclerView() {
         rvCourses.layoutManager = LinearLayoutManager(this)
+        courseAdapter = CourseAdapter(emptyList()) { courseId ->
+            currentCourseId = courseId
+            // When a course is clicked, we no longer need to check progress first,
+            // we can directly try to get the lessons.
+            token?.let { viewModel.getLessonsForCourse(courseId, it) }
+        }
+        rvCourses.adapter = courseAdapter
     }
 
     private fun observeViewModel() {
@@ -70,11 +89,7 @@ class CourseActivity : AppCompatActivity() {
                 is CourseState.Success -> {
                     progressBar.visibility = View.GONE
                     rvCourses.visibility = View.VISIBLE
-                    courseAdapter = CourseAdapter(state.courses) { courseId ->
-                        currentCourseId = courseId
-                        token?.let { viewModel.getCourseProgress(courseId, it) }
-                    }
-                    rvCourses.adapter = courseAdapter
+                    courseAdapter.submitList(state.courses)
                 }
                 is CourseState.Error -> {
                     progressBar.visibility = View.GONE
@@ -91,14 +106,11 @@ class CourseActivity : AppCompatActivity() {
                     Toast.makeText(this, state.message, Toast.LENGTH_LONG).show()
                 }
                 is CourseProgressState.Success -> {
-                    if (state.progress.course.completed) {
-                        progressBar.visibility = View.GONE
-                        Toast.makeText(this, "Curso ya completado", Toast.LENGTH_SHORT).show()
-                    } else {
-                        currentCourseId?.let { courseId ->
-                            token?.let { token ->
-                                viewModel.getLessonsForCourse(courseId, token)
-                            }
+                    // This logic is now simplified, as getCourses provides all the info.
+                    // We just proceed to get the lessons.
+                    currentCourseId?.let { courseId ->
+                        token?.let { token ->
+                            viewModel.getLessonsForCourse(courseId, token)
                         }
                     }
                 }
@@ -116,7 +128,9 @@ class CourseActivity : AppCompatActivity() {
 
                     if (nextIncompleteLesson != null) {
                         val intent = Intent(this, ExerciseActivity::class.java)
+                        intent.putExtra("COURSE_ID", currentCourseId)
                         intent.putExtra("LESSON_ID", nextIncompleteLesson.id)
+                        intent.putExtra("LESSON_NAME", nextIncompleteLesson.title)
                         startActivity(intent)
                     } else if (state.lessons.isNotEmpty()) {
                         currentCourseId?.let { courseId ->
